@@ -10,7 +10,11 @@ A browser userscript. It adds an **Audit my custom feeds** command to your users
 ## Install
 
 1. Install a userscript manager. Tested target: [Violentmonkey](https://violentmonkey.github.io/) (FOSS, MIT).
-2. Open [`feed-organizer-auditor.user.js`](feed-organizer-auditor.user.js) via its **Raw** link on GitHub; the manager will offer to install it.
+2. Open the install link: **[feed-organizer-auditor.user.js](https://raw.githubusercontent.com/kritikostony/reddit-multireddit-auditor/main/feed-organizer-auditor.user.js)**. The manager will offer to install it.
+   To add it by URL instead (Violentmonkey: **+** → **Install from URL**), use the raw URL, not the `github.com/.../blob/...` page, which returns HTML:
+   ```
+   https://raw.githubusercontent.com/kritikostony/reddit-multireddit-auditor/main/feed-organizer-auditor.user.js
+   ```
 3. Log in to reddit.com (www.reddit.com or old.reddit.com) and open any page.
 4. Click the Violentmonkey toolbar icon, then **Audit my custom feeds**. Results appear in a panel at the bottom right; close it with **×**.
 
