@@ -5,9 +5,7 @@ Audits your Reddit custom feeds (multireddits):
 - Lists subreddits you are subscribed to but haven't added to any custom feed
 - Lists subreddits that appear in more than one custom feed
 
-Two ways to run it: a browser userscript (any logged-in user, no API app needed) or a Python script (your account only).
-
-## Userscript (recommended)
+## Userscript
 
 Adds an **Audit my custom feeds** button on [r/feed_organizer](https://www.reddit.com/r/feed_organizer/). Clicking it shows both lists for whoever is logged in.
 
@@ -28,10 +26,3 @@ Adds an **Audit my custom feeds** button on [r/feed_organizer](https://www.reddi
 ### Why not a Devvit app?
 
 Devvit (as of `@devvit/reddit` 0.14.7) has no multireddit API, runs the subscription listing as the app account rather than the user, and only allows user-scoped submit post, submit comment, and subscribe actions.
-
-## Python script
-
-Requires Python 3, `praw` (`pip install praw`), and a Reddit script-type OAuth app (client ID + secret).
-
-1. Fill in your credentials in the script. Do not commit them.
-2. Run: `python reddit_auditor.py`
