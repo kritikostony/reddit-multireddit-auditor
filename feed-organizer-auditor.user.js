@@ -192,9 +192,5 @@
     setInterval(sync, 1000);
   }
 
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { crossReference, prefixed };
-  } else {
-    start();
-  }
+  start();
 })();

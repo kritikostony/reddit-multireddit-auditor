@@ -35,9 +35,3 @@ Requires Python 3, `praw` (`pip install praw`), and a Reddit script-type OAuth a
 
 1. Fill in your credentials in the script. Do not commit them.
 2. Run: `python reddit_auditor.py`
-
-## Tests
-
-```sh
-node --test test/*.test.js
-```
