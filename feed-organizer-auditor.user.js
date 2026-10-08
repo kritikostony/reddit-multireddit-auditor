@@ -1,14 +1,15 @@
 // ==UserScript==
 // @name         Feed Organizer Auditor
 // @namespace    https://github.com/kritikostony/reddit-multireddit-auditor
-// @version      1.0.0
-// @description  On r/feed_organizer, audits your custom feeds: subscriptions in no feed, and subreddits in more than one feed. Read-only.
+// @version      1.1.0
+// @description  Audits your Reddit custom feeds: subscriptions in no feed, and subreddits in more than one feed. Run it from the userscript manager's menu on any reddit.com page. Read-only.
 // @match        https://www.reddit.com/*
 // @match        https://old.reddit.com/*
-// @grant        none
+// @grant        GM_registerMenuCommand
 // @run-at       document-idle
 // ==/UserScript==
 
+// Start it from your userscript manager's menu ("Audit my custom feeds") on any reddit.com page.
 // Runs in the page with your existing reddit.com login (same-origin cookies).
 // Makes only two read-only GET requests, both to the reddit.com origin you are on:
 //   /api/multi/mine.json
@@ -18,7 +19,6 @@
 (function () {
   'use strict';
 
-  const SUBREDDIT_PATH = /^\/r\/feed_organizer(\/|$)/i;
   const PAGE_LIMIT = 100;
   const MAX_PAGES = 100; // 10,000 subscriptions; guards against an endless `after` loop
 
@@ -98,11 +98,7 @@
   const STYLE = `
     :host { all: initial; }
     * { box-sizing: border-box; font-family: system-ui, sans-serif; }
-    button.launch { position: fixed; right: 16px; bottom: 16px; z-index: 2147483647;
-      padding: 10px 14px; border: 0; border-radius: 999px; background: #d93a00; color: #fff;
-      font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
-    button.launch:disabled { opacity: .6; cursor: progress; }
-    .panel { position: fixed; right: 16px; bottom: 68px; z-index: 2147483647;
+    .panel { position: fixed; right: 16px; bottom: 16px; z-index: 2147483647;
       width: min(420px, calc(100vw - 32px)); max-height: 70vh; overflow: auto;
       background: #fff; color: #1c1c1c; border: 1px solid #ccc; border-radius: 8px;
       padding: 12px 16px; font-size: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.3); }
@@ -147,50 +143,38 @@
   function mount() {
     const host = el('div', { id: 'feed-organizer-auditor' });
     const root = host.attachShadow({ mode: 'closed' });
-    const panelBody = el('div');
-    const panel = el('div', { className: 'panel', hidden: true }, [
+    const body = el('div');
+    const panel = el('div', { className: 'panel' }, [
       el('div', { className: 'head' }, [
         el('h2', { textContent: 'Feed audit' }),
-        el('button', { textContent: '×', title: 'Close', onclick: () => { panel.hidden = true; } }),
+        el('button', { textContent: '×', title: 'Close', onclick: () => { host.remove(); } }),
       ]),
-      panelBody,
+      body,
     ]);
-    const button = el('button', { className: 'launch', textContent: 'Audit my custom feeds' });
-
-    button.onclick = async () => {
-      button.disabled = true;
-      panel.hidden = false;
-      panelBody.replaceChildren(el('p', { textContent: 'Loading…' }));
-      try {
-        const [multis, subscribed] = await Promise.all([fetchMultis(), fetchSubscribed()]);
-        renderResults(panelBody, crossReference(multis, subscribed),
-          { subscribed: subscribed.length, feeds: multis.length });
-      } catch (err) {
-        panelBody.replaceChildren(el('p', { className: 'error', textContent: err.message }));
-      } finally {
-        button.disabled = false;
-      }
-    };
-
-    root.append(el('style', { textContent: STYLE }), panel, button);
+    root.append(el('style', { textContent: STYLE }), panel);
     document.body.append(host);
-    return host;
+    return { host, body };
   }
 
-  // Reddit is a single-page app, so watch for URL changes and show the button only on r/feed_organizer.
-  function start() {
-    let host = null;
-    let lastPath = null;
-    const sync = () => {
-      if (location.pathname === lastPath) return;
-      lastPath = location.pathname;
-      const onSub = SUBREDDIT_PATH.test(location.pathname);
-      if (onSub && !host) host = mount();
-      if (!onSub && host) { host.remove(); host = null; }
-    };
-    sync();
-    setInterval(sync, 1000);
+  let ui = null;
+  let running = false;
+
+  async function audit() {
+    if (running) return;
+    running = true;
+    if (!ui || !ui.host.isConnected) ui = mount();
+    const { body } = ui;
+    body.replaceChildren(el('p', { textContent: 'Loading…' }));
+    try {
+      const [multis, subscribed] = await Promise.all([fetchMultis(), fetchSubscribed()]);
+      renderResults(body, crossReference(multis, subscribed),
+        { subscribed: subscribed.length, feeds: multis.length });
+    } catch (err) {
+      body.replaceChildren(el('p', { className: 'error', textContent: err.message }));
+    } finally {
+      running = false;
+    }
   }
 
-  start();
+  GM_registerMenuCommand('Audit my custom feeds', audit);
 })();
